@@ -1,5 +1,4 @@
 # Check if .env exists
-
 if [ ! -f .env ]; then
     echo -e "File .env not found. Creating from .env.example"
     
@@ -15,12 +14,10 @@ else
 fi
 
 # Run application
-
 echo - e "Building and starting the application."
 docker-compose up -d --build
 
 # Check if application started successfully
-
 if [ $? -eq 0 ]; then
     echo -e "Application started successfully."
     read -p "Press ENTER to close."
