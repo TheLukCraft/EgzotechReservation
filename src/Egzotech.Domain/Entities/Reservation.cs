@@ -1,7 +1,6 @@
 using Egzotech.Domain.Enums;
 
 namespace Egzotech.Domain.Entities;
-
 public class Reservation
 {
     public Guid Id { get; private set; }
