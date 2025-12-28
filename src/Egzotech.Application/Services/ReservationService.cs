@@ -13,6 +13,21 @@ public class ReservationService(
     TimeProvider timeProvider
     ) : IReservationService
 {
+    public async Task ConfirmReservationAsync(Guid reservationId, CancellationToken cancellationToken)
+    {
+        var reservation = await reservationRepository.GetByIdAsync(reservationId, cancellationToken);
+    
+        if (reservation is null)
+        {
+            throw new KeyNotFoundException($"Reservation {reservationId} not found.");
+        }
+
+        // validate if reservation can be confirmed
+        reservation.Confirm();
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<ReservationResponseDto> LockSlotAsync(CreateReservationDto dto, CancellationToken cancellationToken)
     {
         if (!Guid.TryParse(dto.RobotId, out var robotGuid))
