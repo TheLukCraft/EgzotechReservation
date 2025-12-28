@@ -1,0 +1,55 @@
+services:
+  sql-server:
+    image: mcr.microsoft.com/azure-sql-edge:2.0.0
+    container_name: Egzotech_sql-server
+    restart: always
+    environment:
+      SA_PASSWORD: "${DB_SA_PASSWORD}"
+      ACCEPT_EULA: "Y"
+    networks:
+      - app-network
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserverdata:/var/opt/mssql
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools/bin/sqlcmd", "-S", "localhost", "-U", "${DB_SA_LOGIN}", "-P", "${DB_SA_PASSWORD}", "-Q", "SELECT 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 200s
+
+  backend:
+    env_file:
+      - .env
+    build:
+      context: ./src
+      dockerfile: Dockerfile
+    container_name: Egzotech_backend
+    restart: always
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_NAME=${DB_NAME}
+      - DB_SA_LOGIN=${DB_SA_LOGIN}
+      - DB_SA_PASSWORD=${DB_SA_PASSWORD}
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
+      - ConnectionString__DefaultConnection=Server=sql-server,1433;Database=${DB_NAME};User Id=${DB_SA_LOGIN};Password=${DB_SA_PASSWORD};TrustServerCertificate=True;
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    ports:
+      - "5000:5000"
+    depends_on:
+      sql-server:
+        condition: service_healthy
+
+networks:
+  app-network:
+
+volumes:
+  sqlserverdata:
