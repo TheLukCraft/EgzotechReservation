@@ -33,7 +33,7 @@ services:
       - DB_SA_LOGIN=${DB_SA_LOGIN}
       - DB_SA_PASSWORD=${DB_SA_PASSWORD}
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
-      - ConnectionString__DefaultConnection=Server=sql-server,1433;Database=${DB_NAME};User Id=${DB_SA_LOGIN};Password=${DB_SA_PASSWORD};TrustServerCertificate=True;
+      - ConnectionStrings__DefaultConnection=Server=sql-server,1433;Database=${DB_NAME};User Id=${DB_SA_LOGIN};Password=${DB_SA_PASSWORD};TrustServerCertificate=True;
     networks:
       - app-network
     healthcheck:

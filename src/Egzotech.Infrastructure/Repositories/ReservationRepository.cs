@@ -29,4 +29,28 @@ internal class ReservationRepository(EgzotechDbContext dbContext) : IReservation
                 reservation.EndTime > startTime,
                 cancellationToken);
     }
+
+    public async Task<IEnumerable<Reservation>> GetForRobotAndDateAsync(Guid robotId, DateOnly date, CancellationToken cancellationToken)
+    {
+        // Convert DateOnly to DateTimeOffset range for the entire day
+        var startOfDay = new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+        var endOfDay = new DateTimeOffset(date.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+
+        return await dbContext.Reservations
+            .Where(reservation => reservation.RobotId == robotId &&
+                        reservation.Status != ReservationStatus.Expired &&
+                        reservation.StartTime >= startOfDay &&
+                        reservation.StartTime <= endOfDay)
+            .OrderBy(reservation => reservation.StartTime)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IEnumerable<Reservation>> GetForDateRangeAsync(DateTimeOffset start, DateTimeOffset end, CancellationToken cancellationToken)
+    {
+        return await dbContext.Reservations
+            .Where(r => r.Status != ReservationStatus.Expired &&
+                        r.StartTime < end &&
+                        r.EndTime > start) // Pobieramy wszystko co zahacza o ten dzień
+            .ToListAsync(cancellationToken);
+    }
 }
