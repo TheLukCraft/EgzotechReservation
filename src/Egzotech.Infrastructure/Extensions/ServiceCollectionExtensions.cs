@@ -2,6 +2,7 @@ using Egzotech.Application.Interfaces;
 using Egzotech.Infrastructure.Persistence;
 using Egzotech.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Egzotech.Application.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -25,6 +26,7 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IReservationRepository, ReservationRepository>();
         services.AddScoped<IRobotRepository, RobotRepository>();
+        services.AddScoped<IReservationService, ReservationService>();
         services.AddHostedService<BackgroundJobs.ReservationCleanupWorker>();
         services.AddScoped<Seed.DataSeeder>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
