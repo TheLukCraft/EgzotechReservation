@@ -1,13 +1,15 @@
 using Egzotech.Application.DTOs.Reservations;
 using Egzotech.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using FluentValidation;
 
 namespace Egzotech.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
-public class ReservationsController(IReservationService reservationService) : ControllerBase
+public class ReservationsController(IReservationService reservationService, 
+IValidator<CreateReservationDto> validator) : ControllerBase
 {    
     /// <summary>
     /// Temporarily locks a time slot for 10 minutes.
@@ -30,6 +32,13 @@ public class ReservationsController(IReservationService reservationService) : Co
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> LockSlot([FromBody] CreateReservationDto dto, CancellationToken cancellationToken)
     {
+        var validationResult = await validator.ValidateAsync(dto, cancellationToken);
+        
+        if (!validationResult.IsValid)
+        {
+            return BadRequest(validationResult.Errors.Select(e => new { Field = e.PropertyName, Error = e.ErrorMessage }));
+        }
+
         var result = await reservationService.LockSlotAsync(dto, cancellationToken);
         
         return CreatedAtAction(nameof(LockSlot), new { id = result.Id }, result);
